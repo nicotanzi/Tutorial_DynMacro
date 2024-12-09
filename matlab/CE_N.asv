@@ -31,7 +31,7 @@ clear all;
 beta=0.99; % beta del problema
 sigma=1;
 K=1:0.5:200; % K es el vector (fila) de valores que puede tomar la torta
-T=200; % Número de iteraciones
+T=174; % Número de iteraciones
 toler=.0001;
 
 %% INICIALIZACIÓN DE MATRICES Y VECTORES
@@ -98,27 +98,24 @@ for i=1:length(K)
     % Es decir que R(K) es la primera iteración
 end
 
-% Guardo los datos de la primera iteración
-matV(1,:)=V;
-matG(1,:)=K;
+% Primero guardo los datos de la primera iteración
+matV(1,:)=V; % Guardo en la fila h, la f de valor de la iteración h+1
+matG(1,:)=K; % Guardo en la fila h, la f de valor de la iteración h
 
-% La diferencia de la primera iteración
-V_0 = zeros(size(K));
+V_old = zeros(size(K)); % inicializo un vector
 for i=1:size(K,2)
-    if sigma==1 
+    if sigma==1 % si sigma es 1, entonces la CRRA tiende a una logarítmica
         V(i)=log(K(i)); 
     else
         V(i)=((K(i)).^(1-sigma))./(1-sigma);
     end
 end
-diff=(V-V_0);
+diff=
 D(1)=max(diff); % Guardo los errores
 
 
 
 %% ITERACIONES SUBSIGUIENTES
-
-ultima_it=T;
 
 for h=1:T
     
@@ -142,14 +139,13 @@ end
 diff=(V-v); % Computo la diferencia con la anterior
 V=v; % Actualizo la función de Valor
 matV(h+1,:)=v; % Guardo en la fila h, la f de valor de la iteración h+1
-matG(h+1,:)=G; % Guardo en la fila h, la f de valor de la iteración h+1
+matG(h+1,:)=G; % Guardo en la fila h, la f de valor de la iteración h
 D(h+1)=max(diff); % Guardo los errores
 
 % Si el nivel de tolerancia es el adecuado salgo, sino continuo
 if abs (diff)<=toler
     disp("Se alcanzó el nivel de tolerancia estipulado luego de la iteración:")
     disp(h+1)
-    ultima_it=h+1;
     break
 end
 
@@ -167,18 +163,14 @@ legend('Policy Fuction','45°');
 grid
 
 
-%% GIF VFI
+%% CREACIÓN DE UN GIF
 
 % Nombre del archivo GIF
 filename = 'evolucion_valor.gif';
 
-% Determinar índices para 10 imágenes espaciadas uniformemente
-num_frames = 10; % Número deseado de imágenes en el GIF
-indices = round(linspace(1, ultima_it, num_frames)); % Índices de iteraciones
-
 % Crear un gráfico para el GIF
 figure(4);
-for h = indices
+for h = 1:25:T
     plot(K, matV(h, :), 'LineWidth', 2);
     title(['Iteración ', num2str(h)]);
     xlabel('K');
@@ -193,10 +185,11 @@ for h = indices
     [imind, cm] = rgb2ind(img, 256);
 
     % Guardar el frame en el GIF
-    if h == indices(1)
+    if h == 1
         imwrite(imind, cm, filename, 'gif', 'Loopcount', inf, 'DelayTime', 0.5);
     else
         imwrite(imind, cm, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 0.5);
     end
 end
 disp(['GIF creado: ', filename]);
+
